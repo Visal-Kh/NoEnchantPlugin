@@ -1,6 +1,11 @@
 name: NoEnchantPlugin
-version: 1.0
+version: '1.0'
 main: me.loyalty.noenchant.NoEnchantPlugin
 api-version: '1.21'
 author: LoyaltyMC
 description: Disable all enchantments in the server
+
+permissions:
+  noenchant.bypass:
+    description: Allows player to bypass enchant restrictions
+    default: op
