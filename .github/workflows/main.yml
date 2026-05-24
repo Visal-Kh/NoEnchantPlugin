@@ -1,29 +1,56 @@
-name: Build Plugin
+name: Build NoEnchantPlugin
 
 on:
   push:
     branches:
       - main
 
+  pull_request:
+    branches:
+      - main
+
 jobs:
   build:
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout files
+
+      # Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      # Setup Java 21
+      - name: Setup Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
           distribution: 'temurin'
+          java-version: '21'
 
-      - name: Build with Maven
+      # Cache Maven dependencies
+      - name: Cache Maven Packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2
+
+      # Grant execute permission
+      - name: Grant Maven Permission
+        run: chmod +x mvnw || true
+
+      # Build plugin
+      - name: Build Plugin
         run: mvn clean package
 
-      - name: Upload jar
+      # Upload jar artifact
+      - name: Upload Plugin Jar
         uses: actions/upload-artifact@v4
         with:
           name: NoEnchantPlugin
           path: target/*.jar
+
+      # Build success message
+      - name: Build Finished
+        run: echo "NoEnchantPlugin build completed successfully!"
