@@ -3,9 +3,12 @@ version: '1.0'
 main: me.loyalty.noenchant.NoEnchantPlugin
 api-version: '1.21'
 author: LoyaltyMC
-description: Disable all enchantments in the server
-
+description: Disable all enchantments in the server.
+commands:
+  protectitem:
+    description: ចាក់សោការពារ Item មិនឱ្យលុប Enchant
+    permission: noenchant.admin
 permissions:
-  noenchant.bypass:
-    description: Allows player to bypass enchant restrictions
+  noenchant.admin:
+    description: Allows using the protectitem command
     default: op
