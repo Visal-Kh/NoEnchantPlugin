@@ -78,4 +78,23 @@ public class EnchantListener implements Listener {
             item.getEnchantments().keySet().forEach(item::removeEnchantment);
         }
     }
+
+@Override
+public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    if (cmd.getName().equalsIgnoreCase("protectitem")) {
+        if (!(sender instanceof Player)) return true;
+        Player player = (Player) sender;
+        ItemStack item = player.getInventory().getItemInMainHand();
+        
+        if (item != null && item.getType() != org.bukkit.Material.AIR) {
+            ItemMeta meta = item.getItemMeta();
+            // ដាក់ Tag ការពារ (ត្រូវប្រាកដថាប្រើ Key ដូចគ្នានឹង EnchantListener)
+            NamespacedKey key = new NamespacedKey(this, "is_protected");
+            meta.getPersistentDataContainer().set(key, org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
+            item.setItemMeta(meta);
+            player.sendMessage("§aItem នេះត្រូវបានចាក់សោការពារហើយ!");
+        }
+        return true;
+    }
+    return false;
 }
