@@ -19,8 +19,9 @@ public class EnchantListener implements Listener {
     private final NamespacedKey customItemKey;
 
     public EnchantListener(JavaPlugin plugin) {
-        // បង្កើត Key សម្រាប់ចាក់សោ Item
-        this.customItemKey = new NamespacedKey(plugin, "is_protected");
+    this.customItemKey = new NamespacedKey(plugin, "is_protected");
+}
+
     }
 
     // មុខងារត្រួតពិនិត្យថា តើ Item នេះត្រូវបានការពារដែរឬទេ
