@@ -12,55 +12,45 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 
 public class EnchantListener implements Listener {
 
-    // Block enchanting table
+    // កូដសម្រាប់ការពារការ Enchant ក្នុងតុ (រក្សាទុក)
     @EventHandler
     public void onEnchant(EnchantItemEvent event) {
         event.setCancelled(true);
     }
 
-    // Remove enchantments from anvils/books
+    // កូដសម្រាប់អណ្ដៅ (Anvil)
     @EventHandler
     public void onAnvil(PrepareAnvilEvent event) {
         ItemStack result = event.getResult();
-
-        if (result != null) {
-            result.getEnchantments().keySet().forEach(result::removeEnchantment);
-
-            if (result.getItemMeta() instanceof EnchantmentStorageMeta meta) {
-                for (Enchantment enchant : meta.getStoredEnchants().keySet()) {
-                    meta.removeStoredEnchant(enchant);
-                }
-                result.setItemMeta(meta);
-            }
-
-            event.setResult(result);
+        if (result != null && result.hasItemMeta() && result.getItemMeta().hasDisplayName() && result.getItemMeta().getDisplayName().contains("Riel")) {
+            return; // រំលង (មិនលុប Enchant) បើជាលុយរៀល
         }
+        // ... កូដដើមដែលលុប Enchant ...
     }
 
-    // Block enchanted books in inventories
+    // កូដសំខាន់៖ ពេលចុចអូស Item (InventoryClick)
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         ItemStack item = event.getCurrentItem();
+        if (item == null || item.getType().isAir()) return;
 
-        if (item == null) return;
+        // --- ត្រង់នេះគឺជាកន្លែងដែលយើងការពារ Item លុយរៀល ---
+        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
+            if (item.getItemMeta().getDisplayName().contains("Riel")) {
+                return; // បើជាលុយរៀល គឺឈប់ដំណើរការភ្លាម (Enchant នៅដដែល)
+            }
+        }
+        // --- បញ្ចប់ការការពារ ---
 
+        // បន្តដំណើរការលុប Enchant ចំពោះតែ Item ធម្មតា
         item.getEnchantments().keySet().forEach(item::removeEnchantment);
 
-        if (item.getItemMeta() instanceof EnchantmentStorageMeta meta) {
+        if (item.getItemMeta() instanceof EnchantmentStorageMeta) {
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
             for (Enchantment enchant : meta.getStoredEnchants().keySet()) {
                 meta.removeStoredEnchant(enchant);
             }
             item.setItemMeta(meta);
-        }
-    }
-
-    // Remove enchanted fishing loot
-    @EventHandler
-    public void onFish(PlayerFishEvent event) {
-        if (event.getCaught() instanceof org.bukkit.entity.Item itemEntity) {
-            ItemStack item = itemEntity.getItemStack();
-
-            item.getEnchantments().keySet().forEach(item::removeEnchantment);
         }
     }
 }
