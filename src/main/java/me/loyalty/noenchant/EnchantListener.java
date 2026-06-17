@@ -1,7 +1,10 @@
 package me.loyalty.noenchant;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.enchantments.Enchantment;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.enchantment.EnchantItemEvent;
@@ -14,17 +17,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class EnchantListener implements Listener {
+public class EnchantListener implements Listener, CommandExecutor {
 
     private final NamespacedKey customItemKey;
 
     public EnchantListener(JavaPlugin plugin) {
-    this.customItemKey = new NamespacedKey(plugin, "is_protected");
-}
-
+        this.customItemKey = new NamespacedKey(plugin, "is_protected");
     }
 
-    // មុខងារត្រួតពិនិត្យថា តើ Item នេះត្រូវបានការពារដែរឬទេ
     private boolean isProtected(ItemStack item) {
         if (item == null || !item.hasItemMeta()) return false;
         ItemMeta meta = item.getItemMeta();
@@ -33,7 +33,7 @@ public class EnchantListener implements Listener {
 
     @EventHandler
     public void onEnchant(EnchantItemEvent event) {
-        if (isProtected(event.getItem())) return; 
+        if (isProtected(event.getItem())) return;
         event.setCancelled(true);
     }
 
@@ -41,7 +41,6 @@ public class EnchantListener implements Listener {
     public void onAnvil(PrepareAnvilEvent event) {
         ItemStack result = event.getResult();
         if (isProtected(result)) return;
-        
         if (result != null) {
             result.getEnchantments().keySet().forEach(result::removeEnchantment);
             if (result.getItemMeta() instanceof EnchantmentStorageMeta) {
@@ -56,13 +55,9 @@ public class EnchantListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         ItemStack item = event.getCurrentItem();
         if (item == null || item.getType().isAir()) return;
-
-        // ប្រសិនបើជា Item ការពារ គឺឈប់ដំណើរការភ្លាម (រក្សាទុក Enchant)
         if (isProtected(item)) return;
 
-        // លុប Enchant ចំពោះ Item ធម្មតា
         item.getEnchantments().keySet().forEach(item::removeEnchantment);
-
         if (item.getItemMeta() instanceof EnchantmentStorageMeta) {
             EnchantmentStorageMeta meta = (EnchantmentStorageMeta) item.getItemMeta();
             meta.getStoredEnchants().keySet().forEach(meta::removeStoredEnchant);
@@ -79,22 +74,21 @@ public class EnchantListener implements Listener {
         }
     }
 
-@Override
-public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-    if (cmd.getName().equalsIgnoreCase("protectitem")) {
-        if (!(sender instanceof Player)) return true;
-        Player player = (Player) sender;
-        ItemStack item = player.getInventory().getItemInMainHand();
-        
-        if (item != null && item.getType() != org.bukkit.Material.AIR) {
-            ItemMeta meta = item.getItemMeta();
-            // ដាក់ Tag ការពារ (ត្រូវប្រាកដថាប្រើ Key ដូចគ្នានឹង EnchantListener)
-            NamespacedKey key = new NamespacedKey(this, "is_protected");
-            meta.getPersistentDataContainer().set(key, org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
-            item.setItemMeta(meta);
-            player.sendMessage("§aItem នេះត្រូវបានចាក់សោការពារហើយ!");
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (cmd.getName().equalsIgnoreCase("protectitem")) {
+            if (!(sender instanceof Player)) return true;
+            Player player = (Player) sender;
+            ItemStack item = player.getInventory().getItemInMainHand();
+
+            if (item != null && item.getType() != org.bukkit.Material.AIR) {
+                ItemMeta meta = item.getItemMeta();
+                meta.getPersistentDataContainer().set(customItemKey, PersistentDataType.BYTE, (byte) 1);
+                item.setItemMeta(meta);
+                player.sendMessage("§a[ជោគជ័យ] Item នេះត្រូវបានការពារពីការលុប Enchant ហើយ!");
+            }
+            return true;
         }
-        return true;
+        return false;
     }
-    return false;
 }
