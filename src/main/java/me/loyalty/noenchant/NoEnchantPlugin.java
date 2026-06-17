@@ -11,8 +11,10 @@ public class NoEnchantPlugin extends JavaPlugin {
         getLogger().info("NoEnchantPlugin Enabled!");
     }
 
-    @Override
-    public void onDisable() {
-        getLogger().info("NoEnchantPlugin Disabled!");
-    }
+@Override
+public void onEnable() {
+    getServer().getPluginManager().registerEvents(new EnchantListener(this), this);
+    // បន្ថែមបន្ទាត់នេះដើម្បី Register command
+    getCommand("protectitem").setExecutor(this);
+    getLogger().info("NoEnchantPlugin Enabled!");
 }
